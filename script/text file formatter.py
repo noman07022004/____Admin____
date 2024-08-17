@@ -34,16 +34,20 @@ def clean_text(text):
     url_pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+|www\.[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}'
     text = re.sub(url_pattern, '', text)
     # # Add line breaks after commas, periods, semicolons, and exclamation marks (excluding numbers)
+    text = re.sub(r'[<>^_]', '', text)
+
+    """
     text = re.sub(r'(?<=\D)[.] ', '.\n', text)
     text = re.sub(r'(?<=\D)[,;] ', ',\n', text)
     text = re.sub(r'(?<=\D)[!] ', '!\n', text)
     text = re.sub(r'(?<=\D)[?] ', '?\n', text)
-    text = re.sub(r'(?<=\D)["] ', '"\n', text)
+    #text = re.sub(r'(?<=\D)["] ', '"\n', text)
     text = re.sub(r'(\d+)/(\d+)', r'\1 out of \2', text)
 
-    text = re.sub(r'[<>]', '', text)
     text = re.sub(r'\n+', '\n', text)
-    text = re.sub(r'\b([a-zA-Z]+)\d+\b', r'\1', text)
+    #text = re.sub(r'\b([a-zA-Z]+)\d+\b', r'\1', text)
+
+    #"""
     return text
 
 

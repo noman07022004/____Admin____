@@ -1,73 +1,65 @@
 """
- Here's the script creation process summarized in one paragraph with step-by-step prompts: Begin by prompting the user to select multiple MP3 files with the message "Please select MP3 files:". Once files are chosen, iterate through them, printing each file path alongside its index number under the header "Selected MP3 files:". Next, ask the user to select a folder for the output files using "Please select a folder where the output files will be placed:". Then, request the user to input the number of MP3 files they want to combine into each output file with the query "How many files do you want to combine?". During the file combination process, display a progress bar labeled "Combining MP3 Files" to visually indicate progress. Upon completion, notify the user with "Combining MP3 files completed. Output files are in {output_directory}", confirming the location of the combined MP3 files.
- 
+I have many mp3 files and their naming conventions are like 1.mp3, 2.mp3 and 3.mp3. Now create a Python script that will ask me to select the mp3 files. After that, It will ask me to select the output folder for the files. Afterward, it will ask me how many files I want to combine at a time to convert them into one file. Show me all the instructions on the terminal. It will convert the instructed numbered files into one file, and their names will be the starting-ending numbers of their files. you must have to show me the progress bar in terminal using tqdm
+
 """
 import os
-from tkinter import Tk, filedialog, simpledialog
+from tkinter import Tk, filedialog
 from pydub import AudioSegment
 from tqdm import tqdm
-import pprint
 
 def select_files():
-    print("Please select MP3 files:")
-    Tk().withdraw()  # We don't want a full GUI, so keep the root window from appearing
-    files = filedialog.askopenfilenames(title="Select MP3 files", filetypes=[("MP3 Files", "*.mp3")])
+    root = Tk()
+    root.withdraw()
+    files = filedialog.askopenfilenames(title="Select MP3 files", filetypes=[("MP3 files", "*.mp3")])
     return list(files)
 
-def select_output_directory():
-    print("\nPlease select a folder where the output files will be placed:")
-    Tk().withdraw()
-    directory = filedialog.askdirectory(title="Select Output Directory")
-    return directory
+def select_output_folder():
+    root = Tk()
+    root.withdraw()
+    folder = filedialog.askdirectory(title="Select Output Folder")
+    return folder
 
-def combine_files(files, output_directory, num_files_to_combine):
+def combine_mp3_files(files, output_folder, group_size):
     total_files = len(files)
-    num_combinations = total_files // num_files_to_combine
-    
-    progress = tqdm(total=num_combinations, desc="Combining MP3 Files", unit="file")
-    
-    for i in range(0, total_files, num_files_to_combine):
-        segment = files[i:i + num_files_to_combine]
-        combined = AudioSegment.empty()
-        start_num = os.path.basename(segment[0]).split('.')[0]
-        end_num = os.path.basename(segment[-1]).split('.')[0]
-        
-        for file in segment:
-            audio = AudioSegment.from_mp3(file)
-            combined += audio
-        
-        combined.export(os.path.join(output_directory, f"{start_num}-{end_num}.mp3"), format="mp3")
-        progress.update(1)
-    
-    progress.close()
-    print(f"\nCombining MP3 files completed. Output files are in {output_directory}")
+    num_combinations = (total_files + group_size - 1) // group_size  # Calculate the number of combinations
+
+    with tqdm(total=num_combinations, desc="Combining Files") as pbar:
+        for i in range(0, total_files, group_size):
+            chunk = files[i:i + group_size]
+            combined = AudioSegment.empty()
+            
+            for file in chunk:
+                audio = AudioSegment.from_mp3(file)
+                combined += audio
+
+            start_num = os.path.basename(chunk[0]).split('.')[0]
+            end_num = os.path.basename(chunk[-1]).split('.')[0]
+            output_filename = os.path.join(output_folder, f"{start_num}-{end_num}.mp3")
+            
+            combined.export(output_filename, format="mp3")
+            #print(f"Combined {start_num}.mp3 to {end_num}.mp3 into {output_filename}")
+            
+            pbar.update(1)  # Update the progress bar after each combination
+
+    print("All files have been combined.")
 
 def main():
-    print("Welcome to MP3 File Combiner!")
-    
+    print("Now select MP3 files...")
     files = select_files()
     if not files:
-        print("No files selected. Exiting.")
+        print("No files selected. Exiting...")
         return
     
-    print("\nSelected MP3 files:")
-    for idx, file in enumerate(files, start=1):
-        print(f"{idx}. {file}")
-    
-    output_directory = select_output_directory()
-    if not output_directory:
-        print("No output directory selected. Exiting.")
+    print("Now select a folder where the output files will be placed...")
+    output_folder = select_output_folder()
+    if not output_folder:
+        print("No output folder selected. Exiting...")
         return
     
-    num_files_to_combine = simpledialog.askinteger("Input", "How many files do you want to combine?",
-                                                   minvalue=1, maxvalue=len(files))
-    if not num_files_to_combine:
-        print("Invalid number. Exiting.")
-        return
+    group_size = int(input("Enter the number of files to combine at a time: "))
     
-    print(f"\nSelected {len(files)} MP3 files to combine into {len(files) // num_files_to_combine} files.")
-    
-    combine_files(files, output_directory, num_files_to_combine)
+    print(f"Combining {group_size} files at a time...")
+    combine_mp3_files(files, output_folder, group_size)
 
 if __name__ == "__main__":
     main()

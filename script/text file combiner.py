@@ -1,68 +1,65 @@
 """
-I have many txt files and their naming conventions are like 1.txt, 2.txt and 3.txt. Now create a Python script that will ask me to select the text files. After that, It will ask me to select the output folder for the files. Afterward, it will ask me how many files I want to combine at a time to convert them into one file. Show me all the instructions on the terminal. It will convert the instructed numbered files into one file, and their names will be the starting and ending numbers of their files. Show me the progress in the terminal and also use pprint
-
+I have many txt files and their naming conventions are like 1.txt, 2.txt and 3.txt. Now create a Python script that will ask me to select the text files. After that, It will ask me to select the output folder for the files. Afterward, it will ask me how many files I want to combine at a time to convert them into one file. Show me all the instructions on the terminal. It will convert the instructed numbered files into one file, and their names will be the starting and ending numbers of their files.
 """
 import os
-from tkinter import Tk, filedialog
-from pprint import pprint
-from tqdm import tqdm
+import tkinter as tk
+from tkinter import filedialog
 
-def select_txt_files():
-    Tk().withdraw()  # Hide the root window
-    file_paths = filedialog.askopenfilenames(
-        title="Please select txt files:",
-        filetypes=[("Text files", "*.txt")]
-    )
-    return file_paths
+# Function to select text files
+def select_text_files():
+    root = tk.Tk()
+    root.withdraw()
+    files = filedialog.askopenfilenames(title="Select text files", filetypes=[("Text files", "*.txt")])
+    return list(files)
 
+# Function to select output folder
 def select_output_folder():
-    Tk().withdraw()  # Hide the root window
-    folder_path = filedialog.askdirectory(
-        title="Please select a folder where the output files will be placed:"
-    )
-    return folder_path
+    root = tk.Tk()
+    root.withdraw()
+    folder = filedialog.askdirectory(title="Select output folder")
+    return folder
 
-def combine_files(file_paths, output_folder, files_per_combination):
-    for i in range(0, len(file_paths), files_per_combination):
-        combined_files = file_paths[i:i + files_per_combination]
-        if not combined_files:
+# Function to combine files
+def combine_files(selected_files, output_folder, group_size):
+    for i in range(0, len(selected_files), group_size):
+        group = selected_files[i:i+group_size]
+        if not group:
             continue
-        
-        start_num = os.path.basename(combined_files[0]).split('.')[0]
-        end_num = os.path.basename(combined_files[-1]).split('.')[0]
-        output_file_path = os.path.join(output_folder, f"{start_num}-{end_num}.txt")
-        
-        with open(output_file_path, 'w', encoding='utf-8') as output_file:
-            for file_path in combined_files:
-                with open(file_path, 'r', encoding='utf-8') as input_file:
-                    output_file.write(input_file.read())
-                    output_file.write('\n')
-        
-        print(f"Created: {output_file_path}")
+        start_num = os.path.splitext(os.path.basename(group[0]))[0]
+        end_num = os.path.splitext(os.path.basename(group[-1]))[0]
+        output_filename = f"{start_num}-{end_num}.txt"
+        output_path = os.path.join(output_folder, output_filename)
+        with open(output_path, 'w') as outfile:
+            for file in group:
+                with open(file, 'r') as infile:
+                    outfile.write(infile.read())
+                outfile.write("\n")  # Optional: Add a newline between files
 
-def main():
-    print("Please select txt files:")
-    txt_files = select_txt_files()
-    if not txt_files:
-        print("No files selected. Exiting...")
-        return
-
-    print("\nSelected txt files:")
-    pprint(txt_files)
-
-    print("\nPlease select a folder where the output files will be placed:")
-    output_folder = select_output_folder()
-    if not output_folder:
-        print("No folder selected. Exiting...")
-        return
-
-    files_per_combination = int(input("\nHow many files do you want to combine? "))
-
-    print("\nCombining txt Files:")
-    for _ in tqdm(range(0, len(txt_files), files_per_combination)):
-        combine_files(txt_files, output_folder, files_per_combination)
-
-    print(f"\nCombining txt files completed. Output files are in {output_folder}")
-
+# Main script
 if __name__ == "__main__":
-    main()
+    print("Now select the text files you want to combine.")
+    selected_files = select_text_files()
+    
+    if not selected_files:
+        print("No files selected. Exiting the program.")
+        exit()
+
+    print("Now select the output folder where the combined files will be saved.")
+    output_folder = select_output_folder()
+
+    if not output_folder:
+        print("No output folder selected. Exiting the program.")
+        exit()
+
+    while True:
+        try:
+            group_size = int(input("Enter the number of files you want to combine at a time: "))
+            if group_size <= 0:
+                raise ValueError
+            break
+        except ValueError:
+            print("Please enter a valid positive integer.")
+
+    combine_files(sorted(selected_files, key=lambda x: int(os.path.splitext(os.path.basename(x))[0])), output_folder, group_size)
+
+    print("Files have been successfully combined and saved to the output folder.")

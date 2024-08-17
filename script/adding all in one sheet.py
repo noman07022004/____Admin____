@@ -2,7 +2,6 @@
 Create a Python script that processes an Excel file containing multiple sheets named sequentially as "chapter 1," "chapter 2," etc., combines the non-empty rows from these sheets into a new sheet, and saves this combined data into a new Excel file. The new file should be named by appending "(all in one sheet)" to the original file name. The script should also print a detailed summary of the combined data and handle any errors gracefully.
 '''
 
-import openpyxl
 from openpyxl import load_workbook, Workbook
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
