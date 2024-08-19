@@ -11,6 +11,7 @@ def select_files():
     root = Tk()
     root.withdraw()
     files = filedialog.askopenfilenames(title="Select MP3 files", filetypes=[("MP3 files", "*.mp3")])
+    print("Total files : " ,len(files))
     return list(files)
 
 def select_output_folder():

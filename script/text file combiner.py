@@ -10,6 +10,7 @@ def select_text_files():
     root = tk.Tk()
     root.withdraw()
     files = filedialog.askopenfilenames(title="Select text files", filetypes=[("Text files", "*.txt")])
+    print("Total files : ",len(files))
     return list(files)
 
 # Function to select output folder
